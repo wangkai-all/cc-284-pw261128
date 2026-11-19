@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>去标识数据发布审查台</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">🛡</span>
+    <div>
+      <h1>去标识数据发布审查台</h1>
+      <p class="subtitle">累计暴露核对 · 群体缩小检测 · 处置与信息损失比较（样例数据全虚构）</p>
+    </div>
+  </div>
+  <div class="policy-chip" id="policy-chip">策略版本 —</div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button class="tab active" data-tab="overview">总览</button>
+  <button class="tab" data-tab="candidates">候选任务</button>
+  <button class="tab" data-tab="review">发布审查</button>
+  <button class="tab" data-tab="ledger">发布账本</button>
+  <button class="tab" data-tab="downloads">下载中心</button>
+  <button class="tab" data-tab="method">方法与边界</button>
+</nav>
+
+<main>
+  <!-- 总览 -->
+  <section class="panel active" id="panel-overview">
+    <div id="banner-noguarantee" class="banner banner-warn">
+      <strong>重要边界：</strong>本台给出的群体大小、缩小信号与损失指标都是<strong>描述性度量</strong>，
+      用于人工审查与方案比较。<strong>任何简单阈值（包括本台的小群体审查线）都不能保证绝对匿名</strong>——
+      接收方掌握的外部数据、背景知识与后续发布都可能改变重识别风险。
+    </div>
+    <div class="stat-grid" id="stats-grid"></div>
+    <h2>各接收方累计暴露（含已撤回发布）</h2>
+    <div id="recipient-table"></div>
+    <h2>样例编排说明</h2>
+    <div id="seed-story"></div>
+    <h2>最近审计事件</h2>
+    <div id="audit-mini"></div>
+  </section>
+
+  <!-- 候选任务 -->
+  <section class="panel" id="panel-candidates">
+    <div class="section-head">
+      <h2>候选任务</h2>
+      <button class="btn" id="btn-new-candidate">＋ 新建候选（粘贴虚构 JSON）</button>
+    </div>
+    <div id="candidate-table"></div>
+  </section>
+
+  <!-- 发布审查 -->
+  <section class="panel" id="panel-review">
+    <div id="review-empty" class="empty-hint">请从「候选任务」中选择一个任务进入审查。</div>
+    <div id="review-body" hidden>
+      <div class="review-head">
+        <div>
+          <h2 id="review-title"></h2>
+          <p class="muted" id="review-meta"></p>
+        </div>
+        <div class="review-actions">
+          <button class="btn ghost" id="btn-refresh-analysis">重新分析（按当前账本）</button>
+        </div>
+      </div>
+      <div id="late-banner" class="banner banner-alert" hidden>
+        <strong>迟到任务：</strong><span id="late-text"></span>
+        系统已按<strong>当前策略与全部历史发布（含已撤回）</strong>重算，旧处置不会被自动沿用。
+      </div>
+
+      <h3>① 预设方案比较</h3>
+      <p class="muted">同一候选、同一累计知识库下四个方案的风险信号与信息损失并排比较。</p>
+      <div class="preset-grid" id="preset-grid"></div>
+
+      <h3>② 等价类明细（基于「原样发布」基线；哪些组合被新文件缩小了群体）</h3>
+      <div class="legend">
+        <span class="tag tag-singleton">singleton 单人组合</span>
+        <span class="tag tag-small">small 小群体（触发审查线，非匿名保证）</span>
+        <span class="tag tag-shrunk">shrunk 新文件缩小了历史群体</span>
+      </div>
+      <div id="class-table"></div>
+
+      <h3>③ 逐行差异预览（基线方案）</h3>
+      <div id="diff-table"></div>
+
+      <h3>④ 自定义方案与发布</h3>
+      <div class="plan-editor">
+        <table class="plan-table">
+          <thead><tr><th>准标识符</th><th>泛化层级</th><th>层级说明</th></tr></thead>
+          <tbody id="plan-levels"></tbody>
+        </table>
+        <div class="plan-side">
+          <label class="check"><input type="checkbox" id="plan-auto-suppress">
+            自动抑制基线中全部被标记人员</label>
+          <label class="check"><input type="checkbox" id="plan-reject">
+            整份拒发（不发布任何行，信息损失 100%）</label>
+          <div class="plan-buttons">
+            <button class="btn" id="btn-apply-custom">分析自定义方案</button>
+            <button class="btn primary" id="btn-publish">按当前自定义方案发布/拒发</button>
+          </div>
+          <p class="muted small">发布时服务端会再次按当前账本实时重算并校验，前端参数无法绕过审查。</p>
+          <div id="custom-result"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 发布账本 -->
+  <section class="panel" id="panel-ledger">
+    <h2>发布账本（只追加；撤回不抹除已暴露事实）</h2>
+    <div id="ledger-table"></div>
+    <div id="withdraw-dialog-anchor"></div>
+  </section>
+
+  <!-- 下载中心 -->
+  <section class="panel" id="panel-downloads">
+    <h2>下载中心</h2>
+    <p class="muted">撤回的发布立即停止下载，但接收方此前已经拿到的副本无法追回——
+      重新发布时必须把这些历史信息计入累计暴露。</p>
+    <div id="download-table"></div>
+  </section>
+
+  <!-- 方法与边界 -->
+  <section class="panel" id="panel-method">
+    <h2>方法说明与能力边界</h2>
+    <div class="method-doc" id="method-doc"></div>
+  </section>
+</main>
+
+<!-- 通用弹窗 -->
+<div class="modal-backdrop" id="modal-backdrop" hidden>
+  <div class="modal" id="modal-box">
+    <div class="modal-head">
+      <h3 id="modal-title"></h3>
+      <button class="btn ghost" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<div id="toast-root"></div>
+<script src="/app.js"></script>
+</body>
+</html>

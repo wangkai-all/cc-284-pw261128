@@ -7,6 +7,9 @@ node_modules/
 __pycache__/
 .claude/
 .cc-workbench/
+# 运行期状态（发布账本）。首次启动会从虚构种子自动重建
+data/
+*.tmp
 .next/
 .nuxt/
 target/
